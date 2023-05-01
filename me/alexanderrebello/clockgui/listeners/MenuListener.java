@@ -29,7 +29,6 @@ public class MenuListener implements Listener {
         // check if clicked item is a clock
         ItemStack item = e.getCurrentItem();
         if (item.getType() != Material.CLOCK) return;
-        Bukkit.getLogger().info("5");
 
         Player p = (Player) e.getWhoClicked();
         World w = p.getWorld();
@@ -39,13 +38,13 @@ public class MenuListener implements Listener {
         // check if item is part of the clock inventory and change time
         switch (time) {
             case TimeMenu.DAWN:
-                w.setTime(6000);
+                w.setTime(0);
                 break;
             case TimeMenu.NOON:
-                w.setTime(13000);
+                w.setTime(6000);
                 break;
             case TimeMenu.DUSK:
-                w.setTime(20000);
+                w.setTime(12000);
                 break;
             default:
                 return;
@@ -54,7 +53,7 @@ public class MenuListener implements Listener {
         // announce time change
         for (Player player : w.getPlayers())
         {
-            player.sendMessage(p.getDisplayName() + ChatColor.WHITE + " changed the time to " + ChatColor.GOLD + time);
+            player.sendMessage(p.getDisplayName() + ChatColor.WHITE + " used " + ChatColor.RED + "Dr. Strange's " + ChatColor.GREEN + "time stone" + ChatColor.WHITE + " and changed the time to " + ChatColor.GOLD + time);
         }
     }
 
