@@ -1,0 +1,8 @@
+name: ClockGUI
+version: 1.0
+author: Alexander Rebello
+main: me.alexanderrebello.clockgui.Main
+api-version: 1.17
+commands:
+  timestone:
+    description: Retrieve a time stone
