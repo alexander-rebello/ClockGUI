@@ -1,0 +1,16 @@
+# the name off the menu
+menu-title: '&9Clock GUI'
+
+# this will be the name of the item combined with
+# the one stored in the database. Example:
+# '&fClick for &6' + 'Dawn' => '&fClick for &6Dawn'
+menu-item-prefix: '&fClick for &6'
+
+# if an empty line should be added to the bottom
+# of the menu inventory. Only works if no item is
+# added to the last line, because the maximum of
+# rows in the inventory is five
+add-empty-line: true
+
+# the name of the item which opens the menu
+item-name: "&cDr. Strange's &aTime Stone"

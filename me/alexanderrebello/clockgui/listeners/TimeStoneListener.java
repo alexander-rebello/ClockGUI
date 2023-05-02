@@ -1,18 +1,26 @@
 package me.alexanderrebello.clockgui.listeners;
 
+import me.alexanderrebello.clockgui.Main;
 import me.alexanderrebello.clockgui.menus.TimeMenu;
-import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
 public class TimeStoneListener  implements Listener {
+
+    private TimeMenu timeMenu;
+    private FileConfiguration config;
+
+    public TimeStoneListener(Main main) {
+        this.config = main.getConfig();
+        this.timeMenu = main.timeMenu;
+    }
 
     @EventHandler
     public void onTimeStoneClick(PlayerInteractEvent e){
@@ -31,11 +39,11 @@ public class TimeStoneListener  implements Listener {
         if (item.getType() != Material.EMERALD) return;
 
         // check if clicked item is really the time stone
-        if (!item.getItemMeta().getDisplayName().equalsIgnoreCase(TimeMenu.INVENTORY_ITEM_TITLE)) return;
+        if (!item.getItemMeta().getDisplayName().equalsIgnoreCase(ChatColor.translateAlternateColorCodes('&', this.config.getString("item-name")))) return;
 
         // show the menu to the player
         Player p = (Player) e.getPlayer();
-        new TimeMenu(p);
+        this.timeMenu.showMenu(p);
 
         // prevent the player from using the stone like a normal item
         e.setCancelled(true);

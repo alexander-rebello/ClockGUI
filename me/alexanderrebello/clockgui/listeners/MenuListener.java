@@ -1,10 +1,13 @@
 package me.alexanderrebello.clockgui.listeners;
 
+import me.alexanderrebello.clockgui.Main;
 import me.alexanderrebello.clockgui.menus.TimeMenu;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.craftbukkit.libs.org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -14,6 +17,14 @@ import org.bukkit.inventory.ItemStack;
 
 public class MenuListener implements Listener {
 
+    FileConfiguration config;
+    public TimeMenu timeMenu;
+
+    public MenuListener(Main main) {
+        this.config = main.getConfig();
+        this.timeMenu = main.timeMenu;
+    }
+
     @EventHandler
     public void  onMenuClick(InventoryClickEvent e) {
         if (e.getCurrentItem() == null) return;
@@ -21,7 +32,7 @@ public class MenuListener implements Listener {
         if (!(e.getWhoClicked() instanceof Player)) return;
 
         // check if time gui is open
-        if (!e.getView().getTitle().equalsIgnoreCase(TimeMenu.MENU_TITLE)) return;
+        if (!e.getView().getTitle().equalsIgnoreCase(ChatColor.translateAlternateColorCodes('&', this.config.getString("menu-title")))) return;
 
         // prevent player from taking the clock
         e.setCancelled(true);
@@ -33,27 +44,14 @@ public class MenuListener implements Listener {
         Player p = (Player) e.getWhoClicked();
         World w = p.getWorld();
 
-        String time = item.getItemMeta().getDisplayName().replace(TimeMenu.ITEM_TITLE_PREFIX, "");
+        int time = this.timeMenu.times.get(this.timeMenu.getIndexOfItem(item));
 
-        // check if item is part of the clock inventory and change time
-        switch (time) {
-            case TimeMenu.DAWN:
-                w.setTime(0);
-                break;
-            case TimeMenu.NOON:
-                w.setTime(6000);
-                break;
-            case TimeMenu.DUSK:
-                w.setTime(12000);
-                break;
-            default:
-                return;
-        }
+        w.setTime(time);
 
         // announce time change
         for (Player player : w.getPlayers())
         {
-            player.sendMessage(p.getDisplayName() + ChatColor.WHITE + " used " + ChatColor.RED + "Dr. Strange's " + ChatColor.GREEN + "time stone" + ChatColor.WHITE + " and changed the time to " + ChatColor.GOLD + time);
+            player.sendMessage(p.getDisplayName() + ChatColor.WHITE + " used " + ChatColor.translateAlternateColorCodes('&', this.config.getString("item-name")) + ChatColor.WHITE + " and changed the time to " + ChatColor.GOLD + time);
         }
     }
 

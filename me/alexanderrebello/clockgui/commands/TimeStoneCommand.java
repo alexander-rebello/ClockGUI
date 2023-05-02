@@ -1,11 +1,13 @@
 package me.alexanderrebello.clockgui.commands;
 
+import me.alexanderrebello.clockgui.Main;
 import me.alexanderrebello.clockgui.menus.TimeMenu;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -14,6 +16,13 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.ArrayList;
 
 public class TimeStoneCommand implements CommandExecutor {
+
+    private FileConfiguration config;
+
+    public TimeStoneCommand(Main main) {
+        this.config = main.getConfig();
+    }
+
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
 
@@ -25,7 +34,7 @@ public class TimeStoneCommand implements CommandExecutor {
 
         ItemStack timeStone = new ItemStack(Material.EMERALD, 1);
         ItemMeta timeStoneMeta = timeStone.getItemMeta();
-        timeStoneMeta.setDisplayName(TimeMenu.INVENTORY_ITEM_TITLE);
+        timeStoneMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', this.config.getString("item-name")));
         timeStoneMeta.addEnchant(Enchantment.VANISHING_CURSE, 10, true);
 
         ArrayList<String> lore = new ArrayList<String>();
