@@ -39,11 +39,7 @@ public class Main extends JavaPlugin {
                                 """);
             stmt.close();
 
-            this.log("Selecting data...");
-            stmt = connection.createStatement();
-            if (!stmt.execute("SELECT * FROM time_gui WHERE `position` < 54 AND `time` < 24000 ORDER BY `position` ASC;")) throw new Exception("");
-            this.timeMenu = new TimeMenu(stmt.getResultSet(), true, ChatColor.BLUE + "Clock GUI", ChatColor.WHITE + "Click for " + ChatColor.GOLD);
-            stmt.close();
+            this.createMenu();
 
             getServer().getPluginManager().registerEvents(new TimeStoneListener(this), this);
             getServer().getPluginManager().registerEvents(new MenuListener(this), this);
@@ -52,6 +48,17 @@ public class Main extends JavaPlugin {
         } catch (Exception e) {
             this.log(e.getMessage(), Level.SEVERE);
             this.setEnabled(false);
+        }
+    }
+
+    public void createMenu() {
+        try {
+            Statement stmt = this.connection.createStatement();
+            stmt.execute("SELECT * FROM time_gui WHERE `position` < 54 AND `time` < 24000 ORDER BY `position` ASC;");
+            this.timeMenu = new TimeMenu(this.connection, stmt.getResultSet(), true, ChatColor.BLUE + "Clock GUI", ChatColor.WHITE + "Click for " + ChatColor.GOLD);
+            stmt.close();
+        } catch (Exception e) {
+            this.log(e.getMessage(), Level.SEVERE);
         }
     }
 

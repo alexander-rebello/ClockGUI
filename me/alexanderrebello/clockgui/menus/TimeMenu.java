@@ -4,17 +4,18 @@ import me.alexanderrebello.clockgui.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 import org.bukkit.craftbukkit.libs.org.apache.commons.lang3.ArrayUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 
 public class TimeMenu {
 
@@ -24,9 +25,10 @@ public class TimeMenu {
     public String[] titles, titlesWithPrefix;
     public int invSize;
     public String menuTitle = "";
+    private Connection connection;
 
-    public TimeMenu(ResultSet resultSet, boolean addRow, String menuTitle, String itemPrefix) throws SQLException {
-
+    public TimeMenu(Connection connection, ResultSet resultSet, boolean addRow, String menuTitle, String itemPrefix) throws SQLException {
+        this.connection = connection;
         this.menuTitle = menuTitle;
 
         // calculate correct size for inventory
@@ -95,4 +97,37 @@ public class TimeMenu {
     public int getIndexOfItem(ItemStack item) {
         return ArrayUtils.indexOf(this.inventory, item);
     }
+
+    @Nullable
+    public String add(String title, int time, Material material, int position) {
+        try {
+            String query = "INSERT INTO `time_gui` (`position`, `time`, `material`, `title`) VALUES (?,?,?,?)";
+            PreparedStatement prepStmt = this.connection.prepareStatement(query);
+            prepStmt.setString(4, title);
+            prepStmt.setInt(2, time);
+            prepStmt.setString(3, material.toString());
+            prepStmt.setInt(1, position);
+            prepStmt.executeQuery();
+        } catch (SQLException e) {
+            Main.log(e.getMessage(), Level.SEVERE);
+            return "Could not add item. See log for more information";
+        }
+        return null;
+    }
+
+    @Nullable
+    public String remove(int position) {
+        try {
+            String query = "DELETE FROM `time_gui` WHERE `position` = ?";
+            PreparedStatement prepStmt = this.connection.prepareStatement(query);
+            prepStmt.setInt(1, position);
+            prepStmt.executeQuery();
+        } catch (SQLException e) {
+            Main.log(e.getMessage(), Level.SEVERE);
+            return "Could not remove item. See log for more information";
+        }
+        return null;
+    }
+
+
 }
