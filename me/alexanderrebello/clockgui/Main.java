@@ -10,6 +10,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.*;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 
 public class Main extends JavaPlugin {
 
@@ -19,8 +20,13 @@ public class Main extends JavaPlugin {
     @Override
     public void onEnable() {
         try {
-            this.connection = DriverManager.getConnection("jdbc:mariadb://localhost:3306/test", "minecraft", "minecraft");
+            this.log("Connecting to a database...");
+            Class.forName("org.mariadb.jdbc.Driver");
 
+            this.connection = DriverManager.getConnection("jdbc:mariadb://localhost:3306/minecraft?allowPublicKeyRetrieval=true&useSSL=false", "minecraft", "minecraft");
+            this.log("Connected database successfully...");
+
+            this.log("Creating table if not exists...");
             Statement stmt = connection.createStatement();
             stmt.executeUpdate("""
                                 CREATE TABLE IF NOT EXISTS `time_gui` (
@@ -33,8 +39,9 @@ public class Main extends JavaPlugin {
                                 """);
             stmt.close();
 
+            this.log("Selecting data...");
             stmt = connection.createStatement();
-            if (!stmt.execute("SELECT * FROM time_gui WHERE `position` BETWEEN 0 AND 44 AND `time` BETWEEN 0 AND 24000 SORT BY `position` ASC;")) throw new Exception("");
+            if (!stmt.execute("SELECT * FROM time_gui WHERE `position` < 54 AND `time` < 24000 ORDER BY `position` ASC;")) throw new Exception("");
             this.timeMenu = new TimeMenu(stmt.getResultSet(), true, ChatColor.BLUE + "Clock GUI", ChatColor.WHITE + "Click for " + ChatColor.GOLD);
             stmt.close();
 
@@ -43,7 +50,7 @@ public class Main extends JavaPlugin {
 
             getCommand("timestone").setExecutor(new TimeStoneCommand(this));
         } catch (Exception e) {
-            Bukkit.getLogger().log(Level.SEVERE, e.getMessage());
+            this.log(e.getMessage(), Level.SEVERE);
             this.setEnabled(false);
         }
     }
@@ -51,10 +58,18 @@ public class Main extends JavaPlugin {
     @Override
     public void onDisable() {
         try {
-            this.connection.close();
+            if (this.connection != null) this.connection.close();
         } catch (SQLException e) {
-            Bukkit.getLogger().log(Level.SEVERE, e.getMessage());
+            this.log(e.getMessage(), Level.SEVERE);
         }
+    }
+
+    public static void log(String msg, Level level) {
+        Bukkit.getLogger().log(level, "ClockGUI: " + msg);
+    }
+
+    public static void log(String msg) {
+        log(msg, Level.INFO);
     }
 }
 

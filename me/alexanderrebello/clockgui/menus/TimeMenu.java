@@ -1,5 +1,6 @@
 package me.alexanderrebello.clockgui.menus;
 
+import me.alexanderrebello.clockgui.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -12,10 +13,12 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TimeMenu {
 
-    public ArrayList<Integer> times = new ArrayList<Integer>();
+    public HashMap<Integer, Integer> times = new HashMap<Integer, Integer>();
     public ItemStack[] inventory;
     public Material[] materials;
     public String[] titles, titlesWithPrefix;
@@ -27,13 +30,20 @@ public class TimeMenu {
         this.menuTitle = menuTitle;
 
         // calculate correct size for inventory
-        resultSet.last();
-        int maxPos = resultSet.getInt("position") + 1;
-        this.invSize = maxPos + (maxPos - maxPos % 9);
-        if (addRow && this.invSize < 45) this.invSize += 9;
+        if (resultSet.last()) {
+            int maxPos = resultSet.getInt("position") + 1;
+            this.invSize = maxPos + (9 - maxPos % 9);
+            if (addRow && this.invSize < 45) this.invSize += 9;
+        } else {
+            this.invSize = 9;
+            Main.log("No items to display");
+        }
 
-        // create list to store inventory
+        // create lists to store inventory data
         this.inventory = new ItemStack[this.invSize];
+        this.materials = new Material[this.invSize];
+        this.titles = new String[this.invSize];
+        this.titlesWithPrefix = new String[this.invSize];
 
         // create placeholder items
         ItemStack placeholder = new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1);
@@ -45,29 +55,33 @@ public class TimeMenu {
         for (int i=0; i < this.invSize; i++) inventory[i] = placeholder;
 
         // add items from the database
-        resultSet.first();
-        while (resultSet.next()) {
+        if (resultSet.first()) do {
 
             int index = resultSet.getInt("position");
+
             this.materials[index] = Material.getMaterial(resultSet.getString("material").toUpperCase());
+
+            if (this.materials[index] == null) this.materials[index] = Material.CLOCK;
+
             this.titles[index] = resultSet.getString("title");
+
             this.titlesWithPrefix[index] = itemPrefix + this.titles[index];
 
             // create item
             ItemStack item = new ItemStack(this.materials[index], 1);
-            ItemMeta itemMeta = placeholder.getItemMeta();
+            ItemMeta itemMeta = item.getItemMeta();
             itemMeta.setDisplayName(this.titlesWithPrefix[index]);
             item.setItemMeta(itemMeta);
 
             // add item
-            this.times.add(index, resultSet.getInt("time"));
+            this.times.put(index, resultSet.getInt("time"));
             this.inventory[index] = item;
-        }
+
+        } while (resultSet.next());
     }
 
-    public void showMenu(Player p) {
-        // ChatColor.translateAlternateColorCodes
 
+    public void showMenu(Player p) {
         // create the inventory later shown to the player
         Inventory inv = Bukkit.createInventory(p, this.invSize, this.menuTitle);
 

@@ -41,12 +41,12 @@ public class TimeStoneListener  implements Listener {
         // check if clicked item is really the time stone
         if (!item.getItemMeta().getDisplayName().equalsIgnoreCase(ChatColor.translateAlternateColorCodes('&', this.config.getString("item-name")))) return;
 
+        // prevent the player from using the stone like a normal item
+        e.setCancelled(true);
+
         // show the menu to the player
         Player p = (Player) e.getPlayer();
         this.timeMenu.showMenu(p);
-
-        // prevent the player from using the stone like a normal item
-        e.setCancelled(true);
 
         return;
     }

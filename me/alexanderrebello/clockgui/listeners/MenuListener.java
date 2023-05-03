@@ -39,19 +39,22 @@ public class MenuListener implements Listener {
 
         // check if clicked item is a clock
         ItemStack item = e.getCurrentItem();
-        if (item.getType() != Material.CLOCK) return;
+        int i = this.timeMenu.getIndexOfItem(item);
+
+        if (item.getType() != this.timeMenu.materials[i]) return;
 
         Player p = (Player) e.getWhoClicked();
         World w = p.getWorld();
 
-        int time = this.timeMenu.times.get(this.timeMenu.getIndexOfItem(item));
+        int time = this.timeMenu.times.get(i);
+        String title = this.timeMenu.titles[i];
 
         w.setTime(time);
 
         // announce time change
         for (Player player : w.getPlayers())
         {
-            player.sendMessage(p.getDisplayName() + ChatColor.WHITE + " used " + ChatColor.translateAlternateColorCodes('&', this.config.getString("item-name")) + ChatColor.WHITE + " and changed the time to " + ChatColor.GOLD + time);
+            player.sendMessage(p.getDisplayName() + ChatColor.WHITE + " used " + ChatColor.translateAlternateColorCodes('&', this.config.getString("item-name")) + ChatColor.WHITE + " and changed the time to " + ChatColor.GOLD + title);
         }
     }
 

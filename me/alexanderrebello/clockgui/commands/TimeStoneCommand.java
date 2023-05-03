@@ -24,30 +24,75 @@ public class TimeStoneCommand implements CommandExecutor {
     }
 
     @Override
-    public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
+    public boolean onCommand(CommandSender commandSender, Command command, String alias, String[] args) {
 
-        // prevent console trying to get a time stone
-        if(!(commandSender instanceof Player)) {
-            commandSender.sendMessage(ChatColor.RED + "This command can only be executed by a player!");
-            return false;
+        if (args.length == 0) {
+            // prevent console trying to get a time stone
+            if(!(commandSender instanceof Player)) {
+                commandSender.sendMessage(ChatColor.RED + "This command can only be executed by a player!");
+                return false;
+            }
+
+            ItemStack timeStone = new ItemStack(Material.EMERALD, 1);
+            ItemMeta timeStoneMeta = timeStone.getItemMeta();
+            timeStoneMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', this.config.getString("item-name")));
+            timeStoneMeta.addEnchant(Enchantment.VANISHING_CURSE, 10, true);
+
+            ArrayList<String> lore = new ArrayList<String>();
+            lore.add("With this mystical");
+            lore.add("stone you may");
+            lore.add("control time itself!");
+            timeStoneMeta.setLore(lore);
+
+            timeStone.setItemMeta(timeStoneMeta);
+
+            Player p = (Player) commandSender;
+            p.getInventory().addItem(timeStone);
+
+            return true;
+        } else if (args.length == 4) {
+            try {
+                int time = Integer.parseInt(args[1]);
+            } catch (NumberFormatException e) {
+                commandSender.sendMessage(ChatColor.RED + "<time> must be a number!");
+                return false;
+            }
+
+            Material material = Material.getMaterial(args[2]);
+            if (material == null) {
+                commandSender.sendMessage(ChatColor.RED + "<material> must be a valid minecraft material!");
+                return false;
+            }
+
+            int time;
+            try {
+                time = Integer.parseInt(args[3]);
+            } catch (NumberFormatException e) {
+                commandSender.sendMessage(ChatColor.RED + "<position> must be a number!");
+                return false;
+            }
+
+            if (time < 0 || time >= 54) {
+                commandSender.sendMessage(ChatColor.RED + "<position> must be a number between 0 and 53!");
+                return false;
+            }
         }
 
-        ItemStack timeStone = new ItemStack(Material.EMERALD, 1);
-        ItemMeta timeStoneMeta = timeStone.getItemMeta();
-        timeStoneMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', this.config.getString("item-name")));
-        timeStoneMeta.addEnchant(Enchantment.VANISHING_CURSE, 10, true);
-
-        ArrayList<String> lore = new ArrayList<String>();
-        lore.add("With this mystical");
-        lore.add("stone you may");
-        lore.add("control time itself!");
-        timeStoneMeta.setLore(lore);
-
-        timeStone.setItemMeta(timeStoneMeta);
-
-        Player p = (Player) commandSender;
-        p.getInventory().addItem(timeStone);
-
-        return true;
+        commandSender.sendMessage(ChatColor.RED + "Usage: /timestone <title> <time> <material> <position>");
+        return false;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

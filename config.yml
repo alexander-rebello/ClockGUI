@@ -9,7 +9,7 @@ menu-item-prefix: '&fClick for &6'
 # if an empty line should be added to the bottom
 # of the menu inventory. Only works if no item is
 # added to the last line, because the maximum of
-# rows in the inventory is five
+# rows in the inventory is six
 add-empty-line: true
 
 # the name of the item which opens the menu
