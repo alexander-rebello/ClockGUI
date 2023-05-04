@@ -42,9 +42,11 @@ public class TimeStoneCommand implements CommandExecutor {
                 break;
             case "remove":
                 error = removeItem(args);
+                if (error == null) commandSender.sendMessage(ChatColor.GREEN + "You successfully removed the item in slot " + args[1]);
                 break;
             case "add":
                 error = addItem(args);
+                if (error == null) commandSender.sendMessage(ChatColor.GREEN + "You successfully added the item " + args[1]);
                 break;
             default:
                 error = "First argument must be empty, 'add' or 'remove'";
@@ -102,6 +104,8 @@ public class TimeStoneCommand implements CommandExecutor {
 
         if (position < 0 || position >= 54) return "<position> must be a number between 0 and 53!";
 
+        if (this.main.timeMenu.times.containsKey(position))  return "Already an item at given position! (First slot=0)";
+
         String error = this.main.timeMenu.add(args[1], time, material, position);
 
         if (error == null) this.main.createMenu();
@@ -122,6 +126,8 @@ public class TimeStoneCommand implements CommandExecutor {
         }
 
         if (position < 0 || position >= 54) return "<position> must be a number between 0 and 53!";
+
+        if (!this.main.timeMenu.times.containsKey(position))  return "No item at given position! (First slot=0)";
 
         String error = this.main.timeMenu.remove(position);
 

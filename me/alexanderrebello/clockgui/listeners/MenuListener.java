@@ -17,12 +17,12 @@ import org.bukkit.inventory.ItemStack;
 
 public class MenuListener implements Listener {
 
-    FileConfiguration config;
-    public TimeMenu timeMenu;
+    private FileConfiguration config;
+    private Main main;
 
     public MenuListener(Main main) {
         this.config = main.getConfig();
-        this.timeMenu = main.timeMenu;
+        this.main = main;
     }
 
     @EventHandler
@@ -37,17 +37,20 @@ public class MenuListener implements Listener {
         // prevent player from taking the clock
         e.setCancelled(true);
 
+        // get current menu
+        TimeMenu timeMenu = this.main.timeMenu;
+
         // check if clicked item is a clock
         ItemStack item = e.getCurrentItem();
-        int i = this.timeMenu.getIndexOfItem(item);
+        int i = timeMenu.getIndexOfItem(item);
 
-        if (item.getType() != this.timeMenu.materials[i]) return;
+        if (item.getType() != timeMenu.materials[i]) return;
 
         Player p = (Player) e.getWhoClicked();
         World w = p.getWorld();
 
-        int time = this.timeMenu.times.get(i);
-        String title = this.timeMenu.titles[i];
+        int time = timeMenu.times.get(i);
+        String title = timeMenu.titles[i];
 
         w.setTime(time);
 

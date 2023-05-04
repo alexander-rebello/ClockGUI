@@ -14,12 +14,12 @@ import org.bukkit.inventory.ItemStack;
 
 public class TimeStoneListener  implements Listener {
 
-    private TimeMenu timeMenu;
+    private Main main;
     private FileConfiguration config;
 
     public TimeStoneListener(Main main) {
         this.config = main.getConfig();
-        this.timeMenu = main.timeMenu;
+        this.main = main;
     }
 
     @EventHandler
@@ -46,7 +46,7 @@ public class TimeStoneListener  implements Listener {
 
         // show the menu to the player
         Player p = (Player) e.getPlayer();
-        this.timeMenu.showMenu(p);
+        this.main.timeMenu.showMenu(p);
 
         return;
     }
