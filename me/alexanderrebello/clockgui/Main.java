@@ -10,7 +10,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.*;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 
 public class Main extends JavaPlugin {
 
@@ -20,13 +19,13 @@ public class Main extends JavaPlugin {
     @Override
     public void onEnable() {
         try {
-            this.log("Connecting to a database...");
+            log("Connecting to a database...");
             Class.forName("org.mariadb.jdbc.Driver");
 
             this.connection = DriverManager.getConnection("jdbc:mariadb://localhost:3306/minecraft?allowPublicKeyRetrieval=true&useSSL=false", "minecraft", "minecraft");
-            this.log("Connected database successfully...");
+            log("Connected database successfully...");
 
-            this.log("Creating table if not exists...");
+            log("Creating table if not exists...");
             Statement stmt = connection.createStatement();
             stmt.executeUpdate("""
                                 CREATE TABLE IF NOT EXISTS `time_gui` (
@@ -46,7 +45,7 @@ public class Main extends JavaPlugin {
 
             getCommand("timestone").setExecutor(new TimeStoneCommand(this));
         } catch (Exception e) {
-            this.log(e.getMessage(), Level.SEVERE);
+            log(e.getMessage(), Level.SEVERE);
             this.setEnabled(false);
         }
     }
@@ -58,7 +57,7 @@ public class Main extends JavaPlugin {
             this.timeMenu = new TimeMenu(this.connection, stmt.getResultSet(), true, ChatColor.BLUE + "Clock GUI", ChatColor.WHITE + "Click for " + ChatColor.GOLD);
             stmt.close();
         } catch (Exception e) {
-            this.log(e.getMessage(), Level.SEVERE);
+            log(e.getMessage(), Level.SEVERE);
         }
     }
 
@@ -67,7 +66,7 @@ public class Main extends JavaPlugin {
         try {
             if (this.connection != null) this.connection.close();
         } catch (SQLException e) {
-            this.log(e.getMessage(), Level.SEVERE);
+            log(e.getMessage(), Level.SEVERE);
         }
     }
 

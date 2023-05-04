@@ -1,7 +1,6 @@
 package me.alexanderrebello.clockgui.listeners;
 
 import me.alexanderrebello.clockgui.Main;
-import me.alexanderrebello.clockgui.menus.TimeMenu;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -12,10 +11,10 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
-public class TimeStoneListener  implements Listener {
+public class TimeStoneListener implements Listener {
 
-    private Main main;
-    private FileConfiguration config;
+    private final Main main;
+    private final FileConfiguration config;
 
     public TimeStoneListener(Main main) {
         this.config = main.getConfig();
@@ -45,9 +44,7 @@ public class TimeStoneListener  implements Listener {
         e.setCancelled(true);
 
         // show the menu to the player
-        Player p = (Player) e.getPlayer();
+        Player p = e.getPlayer();
         this.main.timeMenu.showMenu(p);
-
-        return;
     }
 }

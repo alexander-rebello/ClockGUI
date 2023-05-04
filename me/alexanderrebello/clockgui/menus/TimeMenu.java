@@ -16,13 +16,13 @@ import java.util.logging.Level;
 
 public class TimeMenu {
 
-    public HashMap<Integer, Integer> times = new HashMap<Integer, Integer>();
+    public HashMap<Integer, Integer> times = new HashMap<>();
     public ItemStack[] inventory;
     public Material[] materials;
     public String[] titles, titlesWithPrefix;
     public int invSize;
-    public String menuTitle = "";
-    private Connection connection;
+    public String menuTitle;
+    private final Connection connection;
 
     public TimeMenu(Connection connection, ResultSet resultSet, boolean addRow, String menuTitle, String itemPrefix) throws SQLException {
         this.connection = connection;

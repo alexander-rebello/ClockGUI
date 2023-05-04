@@ -1,12 +1,11 @@
 package me.alexanderrebello.clockgui.commands;
 
 import me.alexanderrebello.clockgui.Main;
-import me.alexanderrebello.clockgui.menus.TimeMenu;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 import org.bukkit.enchantments.Enchantment;
@@ -15,11 +14,12 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
+import java.util.List;
 
-public class TimeStoneCommand implements CommandExecutor {
+public class TimeStoneCommand implements TabExecutor {
 
-    private FileConfiguration config;
-    private Main main;
+    private final FileConfiguration config;
+    private final Main main;
 
     public TimeStoneCommand(Main main) {
         this.main = main;
@@ -64,7 +64,7 @@ public class TimeStoneCommand implements CommandExecutor {
         timeStoneMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', this.config.getString("item-name")));
         timeStoneMeta.addEnchant(Enchantment.VANISHING_CURSE, 10, true);
 
-        ArrayList<String> lore = new ArrayList<String>();
+        ArrayList<String> lore = new ArrayList<>();
         lore.add("With this mystical");
         lore.add("stone you may");
         lore.add("control time itself!");
@@ -134,6 +134,22 @@ public class TimeStoneCommand implements CommandExecutor {
         if (error == null) this.main.createMenu();
 
         return error;
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender commandSender, Command command, String alias, String[] args) {
+        List<String> completions = new ArrayList<>();
+
+        switch (args.length) {
+            case 1:
+                completions.add("add");
+                completions.add("remove");
+                break;
+            default:
+                completions = null;
+        }
+
+        return completions;
     }
 }
 
