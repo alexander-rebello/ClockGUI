@@ -1,7 +1,7 @@
 package me.alexanderrebello.clockgui;
 
 import me.alexanderrebello.clockgui.commands.TimeStoneCommand;
-import me.alexanderrebello.clockgui.listeners.MenuListener;
+import me.alexanderrebello.clockgui.listeners.MenuClickListener;
 import me.alexanderrebello.clockgui.listeners.TimeStoneListener;
 import me.alexanderrebello.clockgui.menus.TimeMenu;
 import org.bukkit.Bukkit;
@@ -13,11 +13,13 @@ import java.util.logging.Level;
 
 public class Main extends JavaPlugin {
 
-    private Connection connection = null;
+    public Connection connection = null;
     public TimeMenu timeMenu = null;
 
     @Override
     public void onEnable() {
+        this.saveDefaultConfig();
+
         try {
             log("Connecting to a database...");
             Class.forName("org.mariadb.jdbc.Driver");
@@ -41,7 +43,7 @@ public class Main extends JavaPlugin {
             this.createMenu();
 
             getServer().getPluginManager().registerEvents(new TimeStoneListener(this), this);
-            getServer().getPluginManager().registerEvents(new MenuListener(this), this);
+            getServer().getPluginManager().registerEvents(new MenuClickListener(this), this);
 
             getCommand("timestone").setExecutor(new TimeStoneCommand(this));
         } catch (Exception e) {
@@ -50,11 +52,18 @@ public class Main extends JavaPlugin {
         }
     }
 
+    /**
+     * recreate the menu and get the data from the database
+     */
     public void createMenu() {
         try {
             Statement stmt = this.connection.createStatement();
-            stmt.execute("SELECT * FROM time_gui WHERE `position` < 54 AND `time` < 24000 ORDER BY `position` ASC;");
-            this.timeMenu = new TimeMenu(this.connection, stmt.getResultSet(), true, ChatColor.BLUE + "Clock GUI", ChatColor.WHITE + "Click for " + ChatColor.GOLD);
+            stmt.execute("SELECT * FROM time_gui WHERE `position` BETWEEN 0 AND 53 AND `time` BETWEEN 0 AND 24000 ORDER BY `position` ASC;");
+
+            String menuTitle = ChatColor.translateAlternateColorCodes('&', this.getConfig().getString("menu-title"));
+            String itemPrefix = ChatColor.translateAlternateColorCodes('&', this.getConfig().getString("menu-item-prefix"));
+            boolean addRow = this.getConfig().getBoolean("add-empty-line");
+            this.timeMenu = new TimeMenu(this.connection, stmt.getResultSet(), addRow, menuTitle, itemPrefix);
             stmt.close();
         } catch (Exception e) {
             log(e.getMessage(), Level.SEVERE);

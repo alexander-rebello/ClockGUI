@@ -3,7 +3,6 @@ package me.alexanderrebello.clockgui.listeners;
 import me.alexanderrebello.clockgui.Main;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -14,10 +13,8 @@ import org.bukkit.inventory.ItemStack;
 public class TimeStoneListener implements Listener {
 
     private final Main main;
-    private final FileConfiguration config;
 
     public TimeStoneListener(Main main) {
-        this.config = main.getConfig();
         this.main = main;
     }
 
@@ -38,7 +35,8 @@ public class TimeStoneListener implements Listener {
         if (item.getType() != Material.EMERALD) return;
 
         // check if clicked item is really the time stone
-        if (!item.getItemMeta().getDisplayName().equalsIgnoreCase(ChatColor.translateAlternateColorCodes('&', this.config.getString("item-name")))) return;
+        String name = ChatColor.translateAlternateColorCodes('&', this.main.getConfig().getString("item-name"));
+        if (!item.getItemMeta().getDisplayName().equalsIgnoreCase(name)) return;
 
         // prevent the player from using the stone like a normal item
         e.setCancelled(true);

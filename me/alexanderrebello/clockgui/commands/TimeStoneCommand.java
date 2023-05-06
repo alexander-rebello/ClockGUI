@@ -1,6 +1,7 @@
 package me.alexanderrebello.clockgui.commands;
 
 import me.alexanderrebello.clockgui.Main;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -13,43 +14,72 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.annotation.Nonnull;
+import java.util.*;
 
 public class TimeStoneCommand implements TabExecutor {
 
     private final FileConfiguration config;
     private final Main main;
+    public final List<String> subcommands = new ArrayList<>();
 
-    public TimeStoneCommand(Main main) {
+    /**
+     * @param main Main class of plugin
+     */
+    public TimeStoneCommand(@Nonnull Main main) {
         this.main = main;
         this.config = main.getConfig();
+
+        this.subcommands.add("reload");
+        this.subcommands.add("give");
+        this.subcommands.add("add");
+        this.subcommands.add("remove");
+        this.subcommands.add("help");
     }
 
+    /**
+     *
+     * @param commandSender
+     * @param command
+     * @param alias
+     * @param args
+     * @return
+     */
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String alias, String[] args) {
         String error = null;
         String option = (args.length == 0) ? "" : args[0];
 
         switch (option) {
-            case "":
+            case "reload":
+                if (args.length != 1) error = "Usage: /timestone reload";
+                this.main.reloadConfig();
+                this.main.createMenu();
+                commandSender.sendMessage(ChatColor.GREEN + "Successfully reloaded the config!");
+                break;
+            case "help":
+                error = this.showHelp(args, commandSender);
+                break;
+            case "give":
                 // prevent console trying to get a time stone
                 if(!(commandSender instanceof Player)) {
                     error = "This command can only be executed by a player!";
                 } else {
-                    this.giveItem(commandSender);
+                    error = this.giveItem(args, commandSender);
+                    String name = ChatColor.translateAlternateColorCodes('&', this.main.getConfig().getString("item-name"));
+                    if (error == null) commandSender.sendMessage(ChatColor.GREEN + "The " + name + " was successfully given to you!");
                 }
                 break;
             case "remove":
-                error = removeItem(args);
+                error = this.removeItem(args);
                 if (error == null) commandSender.sendMessage(ChatColor.GREEN + "You successfully removed the item in slot " + args[1]);
                 break;
             case "add":
-                error = addItem(args);
+                error = this.addItem(args);
                 if (error == null) commandSender.sendMessage(ChatColor.GREEN + "You successfully added the item " + args[1]);
                 break;
             default:
-                error = "First argument must be empty, 'add' or 'remove'";
+                error = "First argument must be 'reload', 'help', 'give', 'add' or 'remove'";
         }
 
         if (error != null) {
@@ -58,7 +88,81 @@ public class TimeStoneCommand implements TabExecutor {
         } else return true;
     }
 
-    private void giveItem(CommandSender commandSender) {
+    /**
+     *
+     * @param args
+     * @param commandSender
+     * @return error, null if no error
+     */
+    @Nullable
+    private String showHelp(@Nonnull String[] args, @Nonnull CommandSender commandSender) {
+        String option;
+        if (args.length == 1) option = "*";
+        else if (args.length == 2) option = args[1];
+        else return "Usage: /timestone help [subcommand]";
+
+        List<String> help = new ArrayList<>();
+
+        help.add(" ");
+        help.add(ChatColor.GREEN + "" + ChatColor.BOLD + "Usage of /timestone:");
+
+        // single command help answers
+        switch (option) {
+            case "*":
+            case "reload":
+                help.add(ChatColor.WHITE + "/timestone reload");
+                help.add(ChatColor.WHITE + "Reload the config and get data from database");
+                help.add(" ");
+                if (option != "*") break;
+            case "help":
+                help.add(ChatColor.WHITE + "/timestone help [subcommand]");
+                help.add(ChatColor.WHITE + "Get help for commands");
+                help.add(" ");
+                if (option != "*") break;
+            case "give":
+                help.add(ChatColor.WHITE + "/timestone give [player]");
+                help.add(ChatColor.WHITE + "Give the item to a player or yourself when missing the argument");
+                help.add(" ");
+                if (option != "*") break;
+            case "add":
+                help.add(ChatColor.WHITE + "/timestone add <title> <time> <material> <position>");
+                help.add(ChatColor.WHITE + "Add item to menu");
+                help.add(" ");
+                if (option != "*") break;
+            case "remove":
+                help.add(ChatColor.WHITE + "/timestone remove <position>");
+                help.add(ChatColor.WHITE + "remove item from menu");
+                help.add(" ");
+                break;
+            default:
+                return "Subcommand '" + option + "' not found!";
+        }
+
+        for (String msg : help) {
+            commandSender.sendMessage(msg);
+        }
+
+        return null;
+    }
+
+    /**
+     *
+     * @param args
+     * @param commandSender
+     * @return error, null if no error
+     */
+    @Nullable
+    private String giveItem(@Nonnull String[] args, @Nonnull CommandSender commandSender) {
+        Player p;
+        if (args.length == 1) {
+            p = (Player) commandSender;
+        } else if (args.length == 2) {
+            p = Bukkit.getPlayer(args[1]);
+            if (p == null) return "Player '" + args[1] + "' not found!";
+        } else return "Usage: /timestone give [player]";
+
+        if (p.getInventory().firstEmpty() == -1) return "Inventory of " + p.getDisplayName() + " is full!";
+
         ItemStack timeStone = new ItemStack(Material.EMERALD, 1);
         ItemMeta timeStoneMeta = timeStone.getItemMeta();
         timeStoneMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', this.config.getString("item-name")));
@@ -72,12 +176,18 @@ public class TimeStoneCommand implements TabExecutor {
 
         timeStone.setItemMeta(timeStoneMeta);
 
-        Player p = (Player) commandSender;
         p.getInventory().addItem(timeStone);
+
+        return null;
     }
 
+    /**
+     *
+     * @param args
+     * @return error, null if no error
+     */
     @Nullable
-    private String addItem(String[] args) {
+    private String addItem(@Nonnull String[] args) {
         if (args.length != 5) return "Usage: /timestone add <title> <time> <material> <position>";
 
         // check if time is valid
@@ -102,19 +212,24 @@ public class TimeStoneCommand implements TabExecutor {
             return "<position> must be a number!";
         }
 
-        if (position < 0 || position >= 54) return "<position> must be a number between 0 and 53!";
+        if (position < 0 || position > 53) return "<position> must be a number between 0 and 53!";
 
         if (this.main.timeMenu.times.containsKey(position))  return "Already an item at given position! (First slot=0)";
 
         String error = this.main.timeMenu.add(args[1], time, material, position);
 
-        if (error == null) this.main.createMenu();
+        //if (error == null) this.main.createMenu();
 
         return error;
     }
 
+    /**
+     *
+     * @param args
+     * @return error, null if no error
+     */
     @Nullable
-    private String removeItem(String[] args) {
+    private String removeItem(@Nonnull String[] args) {
         if (args.length != 2) return "Usage: /timestone remove <position>";
 
         // check if position is valid
@@ -125,44 +240,89 @@ public class TimeStoneCommand implements TabExecutor {
             return "<position> must be a number!";
         }
 
-        if (position < 0 || position >= 54) return "<position> must be a number between 0 and 53!";
+        if (position < 0 || position > 53) return "<position> must be a number between 0 and 53!";
 
         if (!this.main.timeMenu.times.containsKey(position))  return "No item at given position! (First slot=0)";
 
         String error = this.main.timeMenu.remove(position);
 
-        if (error == null) this.main.createMenu();
+        //if (error == null) this.main.createMenu();
 
         return error;
     }
 
+    /**
+     *
+     * @param commandSender
+     * @param command
+     * @param alias
+     * @param args
+     * @return List of suggestions
+     */
     @Override
     public List<String> onTabComplete(CommandSender commandSender, Command command, String alias, String[] args) {
         List<String> completions = new ArrayList<>();
 
         switch (args.length) {
             case 1:
-                completions.add("add");
-                completions.add("remove");
+                completions = this.subcommands;
                 break;
-            default:
-                completions = null;
+            case 2:
+                if (args[0].equalsIgnoreCase("remove")) {
+                    for (HashMap.Entry<Integer, Integer> entry : this.main.timeMenu.times.entrySet()) {
+                        completions.add(Integer.toString(entry.getKey()));
+                    }
+                } else if (args[0].equalsIgnoreCase("give")) {
+                    for (Player p : Bukkit.getOnlinePlayers()) {
+                        completions.add(p.getName());
+                    }
+                } else if (args[0].equalsIgnoreCase("help")) {
+                    completions = this.subcommands;
+                }
+                break;
+            case 3:
+                if (!args[0].equalsIgnoreCase("add")) break;
+
+                for (int i=0; i<=24; i++) {
+                    String s = Integer.toString(i*1000);
+                    if (i==0) s = "   " + s;
+                    if (i<10) s = " " + s;
+                    completions.add(s);
+                }
+
+                break;
+            case 4:
+                if (!args[0].equalsIgnoreCase("add")) break;
+
+                for(Material mat : Material.values()) {
+                    completions.add("minecraft:" + mat.toString().toLowerCase());
+                }
+
+                break;
+            case 5:
+                if (!args[0].equalsIgnoreCase("add")) break;
+
+                for (int i=0; i<=53; i++) {
+                    String s = Integer.toString(i);
+                    if (i<10) s = " " + s;
+                    completions.add(s);
+                }
+
+                break;
         }
 
-        return completions;
+        if (completions.isEmpty()) return completions;
+
+        List<String> filteredCompletions = new ArrayList<>();
+
+        for(String str : completions){
+            if(str.startsWith(args[args.length-1])) {
+                filteredCompletions.add(str);
+            }
+        }
+
+        Collections.sort(filteredCompletions);
+
+        return filteredCompletions;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
