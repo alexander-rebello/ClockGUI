@@ -10,6 +10,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 public class MenuClickListener implements Listener {
 
@@ -36,12 +37,15 @@ public class MenuClickListener implements Listener {
 
         // check if clicked item is a clock
         ItemStack item = e.getCurrentItem();
+        ItemMeta itemMeta = item.getItemMeta();
+
         int i = ArrayUtils.indexOf(timeMenu.inventory, item);
 
         if (
                 i == -1 ||
                 item.getType() != timeMenu.materials[i] ||
-                !item.getItemMeta().getDisplayName().equals(timeMenu.itemPrefix + timeMenu.titles[i])
+                itemMeta == null ||
+                !itemMeta.getDisplayName().equals(timeMenu.itemPrefix + timeMenu.titles[i])
         ) return;
 
         World w = p.getWorld();
@@ -54,7 +58,9 @@ public class MenuClickListener implements Listener {
         // announce time change
         for (Player player : w.getPlayers())
         {
-            String itemTitle = ChatColor.translateAlternateColorCodes('&', this.main.getConfig().getString("item-name"));
+            String itemTitle = this.main.getConfig().getString("item-name");
+            if (itemTitle == null) itemTitle = "Item";
+            else itemTitle = ChatColor.translateAlternateColorCodes('&', itemTitle);
             player.sendMessage(p.getDisplayName() + ChatColor.WHITE + " used " + itemTitle + ChatColor.WHITE + " and changed the time to " + ChatColor.GOLD + title);
         }
     }

@@ -9,6 +9,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 public class TimeStoneListener implements Listener {
 
@@ -35,8 +36,12 @@ public class TimeStoneListener implements Listener {
         if (item.getType() != Material.EMERALD) return;
 
         // check if clicked item is really the time stone
-        String name = ChatColor.translateAlternateColorCodes('&', this.main.getConfig().getString("item-name"));
-        if (!item.getItemMeta().getDisplayName().equalsIgnoreCase(name)) return;
+        String name = this.main.getConfig().getString("item-name");
+        if (name == null) name = "Item";
+        else name = ChatColor.translateAlternateColorCodes('&', name);
+
+        ItemMeta itemMeta = item.getItemMeta();
+        if (itemMeta == null || !itemMeta.getDisplayName().equalsIgnoreCase(name)) return;
 
         // prevent the player from using the stone like a normal item
         e.setCancelled(true);

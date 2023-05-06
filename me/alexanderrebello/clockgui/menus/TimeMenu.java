@@ -31,11 +31,11 @@ public class TimeMenu {
      * @param connection the database connection for updating the data
      * @param resultSet the database data to display
      * @param addRow if an empty row should be added to the bottom or not
-     * @param menuTitle ingame title for menu
+     * @param menuTitle in-game title for menu
      * @param itemPrefix the text shown before the name of the item
-     * @throws SQLException
+     * @throws SQLException if given resultSet is empty
      */
-    public TimeMenu(@Nonnull Connection connection, @Nonnull ResultSet resultSet, @Nonnull boolean addRow, @Nonnull String menuTitle, @Nonnull String itemPrefix) throws SQLException {
+    public TimeMenu(@Nonnull Connection connection, @Nonnull ResultSet resultSet, boolean addRow, @Nonnull String menuTitle, @Nonnull String itemPrefix) throws SQLException {
         this.connection = connection;
         this.menuTitle = menuTitle;
         this.itemPrefix = itemPrefix;
@@ -54,6 +54,7 @@ public class TimeMenu {
         // create placeholder items
         this.placeholder = new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1);
         ItemMeta placeholderMeta = this.placeholder.getItemMeta();
+        assert placeholderMeta != null;
         placeholderMeta.setDisplayName(" ");
         this.placeholder.setItemMeta(placeholderMeta);
 
@@ -79,6 +80,7 @@ public class TimeMenu {
             // create item
             ItemStack item = new ItemStack(this.materials[index], 1);
             ItemMeta itemMeta = item.getItemMeta();
+            assert itemMeta != null;
             itemMeta.setDisplayName(this.itemPrefix + this.titles[index]);
             item.setItemMeta(itemMeta);
 
@@ -133,6 +135,7 @@ public class TimeMenu {
 
         ItemStack item = new ItemStack(material, 1);
         ItemMeta itemMeta = item.getItemMeta();
+        assert itemMeta != null;
         itemMeta.setDisplayName(this.itemPrefix + title);
         item.setItemMeta(itemMeta);
 

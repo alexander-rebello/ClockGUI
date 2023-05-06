@@ -6,6 +6,7 @@ import me.alexanderrebello.clockgui.listeners.TimeStoneListener;
 import me.alexanderrebello.clockgui.menus.TimeMenu;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.*;
@@ -42,10 +43,12 @@ public class Main extends JavaPlugin {
 
             this.createMenu();
 
-            getServer().getPluginManager().registerEvents(new TimeStoneListener(this), this);
-            getServer().getPluginManager().registerEvents(new MenuClickListener(this), this);
+            this.getServer().getPluginManager().registerEvents(new TimeStoneListener(this), this);
+            this.getServer().getPluginManager().registerEvents(new MenuClickListener(this), this);
 
-            getCommand("timestone").setExecutor(new TimeStoneCommand(this));
+            PluginCommand cmd = this.getCommand("timestone");
+            assert cmd != null;
+            cmd.setExecutor(new TimeStoneCommand(this));
         } catch (Exception e) {
             log(e.getMessage(), Level.SEVERE);
             this.setEnabled(false);
@@ -60,8 +63,14 @@ public class Main extends JavaPlugin {
             Statement stmt = this.connection.createStatement();
             stmt.execute("SELECT * FROM time_gui WHERE `position` BETWEEN 0 AND 53 AND `time` BETWEEN 0 AND 24000 ORDER BY `position` ASC;");
 
-            String menuTitle = ChatColor.translateAlternateColorCodes('&', this.getConfig().getString("menu-title"));
-            String itemPrefix = ChatColor.translateAlternateColorCodes('&', this.getConfig().getString("menu-item-prefix"));
+            String menuTitle = this.getConfig().getString("menu-title");
+            if (menuTitle == null) menuTitle = "Menu";
+            else menuTitle = ChatColor.translateAlternateColorCodes('&', menuTitle);
+
+            String itemPrefix = this.getConfig().getString("menu-item-prefix");
+            if (itemPrefix == null) itemPrefix = "Item";
+            else itemPrefix = ChatColor.translateAlternateColorCodes('&', itemPrefix);
+
             boolean addRow = this.getConfig().getBoolean("add-empty-line");
             this.timeMenu = new TimeMenu(this.connection, stmt.getResultSet(), addRow, menuTitle, itemPrefix);
             stmt.close();

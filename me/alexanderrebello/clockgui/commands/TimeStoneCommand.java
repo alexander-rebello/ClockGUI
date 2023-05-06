@@ -7,7 +7,6 @@ import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -19,7 +18,6 @@ import java.util.*;
 
 public class TimeStoneCommand implements TabExecutor {
 
-    private final FileConfiguration config;
     private final Main main;
     public final List<String> subcommands = new ArrayList<>();
 
@@ -28,7 +26,6 @@ public class TimeStoneCommand implements TabExecutor {
      */
     public TimeStoneCommand(@Nonnull Main main) {
         this.main = main;
-        this.config = main.getConfig();
 
         this.subcommands.add("reload");
         this.subcommands.add("give");
@@ -39,14 +36,14 @@ public class TimeStoneCommand implements TabExecutor {
 
     /**
      *
-     * @param commandSender
-     * @param command
-     * @param alias
-     * @param args
-     * @return
+     * @param commandSender sender of command
+     * @param command issued command
+     * @param alias alias used
+     * @param args command arguments
+     * @return true if successful, otherwise false
      */
     @Override
-    public boolean onCommand(CommandSender commandSender, Command command, String alias, String[] args) {
+    public boolean onCommand(@Nonnull CommandSender commandSender, @Nonnull Command command, @Nonnull String alias, @Nonnull String[] args) {
         String error = null;
         String option = (args.length == 0) ? "" : args[0];
 
@@ -66,7 +63,11 @@ public class TimeStoneCommand implements TabExecutor {
                     error = "This command can only be executed by a player!";
                 } else {
                     error = this.giveItem(args, commandSender);
-                    String name = ChatColor.translateAlternateColorCodes('&', this.main.getConfig().getString("item-name"));
+
+                    String name = this.main.getConfig().getString("item-name");
+                    if (name == null) name = "Item";
+                    else name = ChatColor.translateAlternateColorCodes('&', name);
+
                     if (error == null) commandSender.sendMessage(ChatColor.GREEN + "The " + name + " was successfully given to you!");
                 }
                 break;
@@ -90,8 +91,8 @@ public class TimeStoneCommand implements TabExecutor {
 
     /**
      *
-     * @param args
-     * @param commandSender
+     * @param args command arguments
+     * @param commandSender sender of command
      * @return error, null if no error
      */
     @Nullable
@@ -113,22 +114,22 @@ public class TimeStoneCommand implements TabExecutor {
                 help.add(ChatColor.WHITE + "/timestone reload");
                 help.add(ChatColor.WHITE + "Reload the config and get data from database");
                 help.add(" ");
-                if (option != "*") break;
+                if (!option.equals("*")) break;
             case "help":
                 help.add(ChatColor.WHITE + "/timestone help [subcommand]");
                 help.add(ChatColor.WHITE + "Get help for commands");
                 help.add(" ");
-                if (option != "*") break;
+                if (!option.equals("*")) break;
             case "give":
                 help.add(ChatColor.WHITE + "/timestone give [player]");
                 help.add(ChatColor.WHITE + "Give the item to a player or yourself when missing the argument");
                 help.add(" ");
-                if (option != "*") break;
+                if (!option.equals("*")) break;
             case "add":
                 help.add(ChatColor.WHITE + "/timestone add <title> <time> <material> <position>");
                 help.add(ChatColor.WHITE + "Add item to menu");
                 help.add(" ");
-                if (option != "*") break;
+                if (!option.equals("*")) break;
             case "remove":
                 help.add(ChatColor.WHITE + "/timestone remove <position>");
                 help.add(ChatColor.WHITE + "remove item from menu");
@@ -147,8 +148,8 @@ public class TimeStoneCommand implements TabExecutor {
 
     /**
      *
-     * @param args
-     * @param commandSender
+     * @param args command arguments
+     * @param commandSender sender of command
      * @return error, null if no error
      */
     @Nullable
@@ -165,7 +166,13 @@ public class TimeStoneCommand implements TabExecutor {
 
         ItemStack timeStone = new ItemStack(Material.EMERALD, 1);
         ItemMeta timeStoneMeta = timeStone.getItemMeta();
-        timeStoneMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', this.config.getString("item-name")));
+        assert timeStoneMeta != null;
+
+        String name = this.main.getConfig().getString("item-name");
+        if (name == null) name = "Item";
+        else name = ChatColor.translateAlternateColorCodes('&', name);
+
+        timeStoneMeta.setDisplayName(name);
         timeStoneMeta.addEnchant(Enchantment.VANISHING_CURSE, 10, true);
 
         ArrayList<String> lore = new ArrayList<>();
@@ -183,7 +190,7 @@ public class TimeStoneCommand implements TabExecutor {
 
     /**
      *
-     * @param args
+     * @param args command arguments
      * @return error, null if no error
      */
     @Nullable
@@ -216,16 +223,12 @@ public class TimeStoneCommand implements TabExecutor {
 
         if (this.main.timeMenu.times.containsKey(position))  return "Already an item at given position! (First slot=0)";
 
-        String error = this.main.timeMenu.add(args[1], time, material, position);
-
-        //if (error == null) this.main.createMenu();
-
-        return error;
+        return this.main.timeMenu.add(args[1], time, material, position);
     }
 
     /**
      *
-     * @param args
+     * @param args command arguments
      * @return error, null if no error
      */
     @Nullable
@@ -244,23 +247,19 @@ public class TimeStoneCommand implements TabExecutor {
 
         if (!this.main.timeMenu.times.containsKey(position))  return "No item at given position! (First slot=0)";
 
-        String error = this.main.timeMenu.remove(position);
-
-        //if (error == null) this.main.createMenu();
-
-        return error;
+        return this.main.timeMenu.remove(position);
     }
 
     /**
      *
-     * @param commandSender
-     * @param command
-     * @param alias
-     * @param args
+     * @param commandSender sender of command
+     * @param command issued command
+     * @param alias alias used
+     * @param args command arguments
      * @return List of suggestions
      */
     @Override
-    public List<String> onTabComplete(CommandSender commandSender, Command command, String alias, String[] args) {
+    public List<String> onTabComplete(@Nonnull CommandSender commandSender, @Nonnull Command command, @Nonnull String alias, @Nonnull String[] args) {
         List<String> completions = new ArrayList<>();
 
         switch (args.length) {
